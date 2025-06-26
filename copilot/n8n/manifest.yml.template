@@ -20,7 +20,7 @@ http:
 
 # Configuration for your containers and service.
 image:
-  location: 'docker.n8n.io/n8nio/n8n'
+  location: 'YOUR_ACCOUNT_ID.dkr.ecr.us-east-2.amazonaws.com/n8n-app/n8n:latest'
   port: 5678
 
 cpu: 512       # Number of CPU units for the task.

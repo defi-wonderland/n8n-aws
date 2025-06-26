@@ -91,6 +91,25 @@ A modern setup for self-hosting n8n workflow automation on AWS ECS using AWS Cop
    copilot svc deploy --name n8n --env production
    ```
 
+## Custom Image Build and Deployment
+
+This setup uses a custom Docker image that extends the official n8n image. To build and deploy custom images:
+
+1. **Build and push custom image:**
+   ```bash
+   # Login to ECR
+   aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin YOUR_ACCOUNT_ID.dkr.ecr.us-east-2.amazonaws.com
+   
+   # Create multiplatform builder (one time setup)
+   docker buildx create --use --name multiplatform-builder
+   
+   # Build and push for linux/amd64 (ECS platform)
+   docker buildx build --platform linux/amd64 -t YOUR_ACCOUNT_ID.dkr.ecr.us-east-2.amazonaws.com/n8n-app/n8n:latest --push .
+   
+   # Deploy updated service
+   copilot svc deploy --name n8n --env production
+   ```
+
 ## Local Development
 
 For local development, you can use Docker Compose:
