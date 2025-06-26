@@ -1,0 +1,67 @@
+# The manifest for the "n8n" service.
+# Read the full specification for the "Load Balanced Web Service" type at:
+#  https://aws.github.io/copilot-cli/docs/manifest/lb-web-service/
+
+# Your service name will be used in naming your resources like log groups, ECS services, etc.
+name: n8n
+type: Load Balanced Web Service
+
+# Distribute traffic to your service.
+http:
+  # Requests to this path will be forwarded to your service.
+  # To match all requests you can use the "/" path.
+  path: '/'
+  # You can specify a custom health check path. The default is "/".
+  healthcheck: '/healthz'
+  # HTTPS domain alias - REPLACE WITH YOUR DOMAIN
+  alias: 'n8n.yourdomain.com'
+  # SSL certificate ARN - REPLACE WITH YOUR CERTIFICATE ARN
+  certificate_arn: 'arn:aws:acm:us-east-2:YOUR_ACCOUNT_ID:certificate/YOUR_CERT_ID'
+
+# Configuration for your containers and service.
+image:
+  location: 'docker.n8n.io/n8nio/n8n'
+  port: 5678
+
+cpu: 512       # Number of CPU units for the task.
+memory: 1024   # Amount of memory in MiB used by the task.
+exec: true     # Enable running commands in your container.
+
+network:
+  vpc:
+    enable_logs: true
+    placement: 'private'
+
+# Environment variables for n8n
+variables:
+  N8N_PORT: 5678
+  NODE_ENV: production
+  # Enable health check endpoint
+  QUEUE_HEALTH_CHECK_ACTIVE: true
+
+# Persistent storage for n8n data
+storage:
+  volumes:
+    n8nData:
+      path: /home/node/.n8n
+      read_only: false
+      efs:
+        uid: 1000
+        gid: 1000
+
+# You can override any of the values defined above by environment.
+environments:
+  production:
+    variables:
+      # REPLACE WITH YOUR DOMAIN
+      N8N_HOST: n8n.yourdomain.com
+      N8N_PROTOCOL: https
+      WEBHOOK_URL: https://n8n.yourdomain.com/
+      GENERIC_TIMEZONE: Europe/Berlin
+    
+    count:
+      range:
+        min: 1
+        max: 3
+      cpu_percentage: 70
+      memory_percentage: 80 
