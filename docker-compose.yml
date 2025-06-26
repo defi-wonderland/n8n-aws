@@ -20,7 +20,7 @@ services:
       - traefik_data:/letsencrypt
 
   n8n:
-    build:
+    build: .
     labels:
       - traefik.enable=true
       - traefik.http.routers.n8n.rule=Host(`${SUBDOMAIN}.${DOMAIN_NAME}`)
