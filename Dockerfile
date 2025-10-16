@@ -1,4 +1,5 @@
-FROM docker.n8n.io/n8nio/n8n
+# Use a specific version for stability, or :latest for newest
+FROM docker.n8n.io/n8nio/n8n:latest
 
 USER root
 RUN apk add --no-cache ffmpeg

@@ -131,6 +131,16 @@ For local development, you can use Docker Compose:
 
 Once deployed, access n8n at `https://n8n.yourdomain.com` and complete the initial setup to create your admin account.
 
+## Upgrading n8n
+
+The n8n data persists on EFS storage, so upgrading is simple. **No migration needed!**
+
+1. **Update the base image version in `Dockerfile`** (e.g., change `:latest` to `:1.115.3`)
+2. **Build and push the updated image** (see [Custom Image Build and Deployment](#custom-image-build-and-deployment))
+3. **Deploy:** `copilot svc deploy --name n8n --env production`
+
+That's it! Your workflows, credentials, and data are preserved.
+
 ## Maintenance Commands
 
 ```bash
