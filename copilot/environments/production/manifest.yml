@@ -15,9 +15,8 @@ type: Environment
 http:
   public:
     certificates:
-      # REPLACE WITH YOUR CERTIFICATE ARN
-      - "arn:aws:acm:us-east-2:YOUR_ACCOUNT_ID:certificate/YOUR_CERT_ID"
+      - "arn:aws:acm:us-east-2:322507452057:certificate/3d3363ac-b71e-4d6c-8d5d-6a0797d1149f"
 
 # Configure observability for your environment resources.
 observability:
-  container_insights: false 
+  container_insights: false

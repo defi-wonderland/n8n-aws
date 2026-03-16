@@ -1,118 +1,35 @@
-# n8n Self-Hosting Setup on AWS ECS
+# n8n Self-Hosting on AWS ECS
 
-A modern setup for self-hosting n8n workflow automation on AWS ECS using AWS Copilot CLI.
+Self-hosted n8n workflow automation on AWS ECS using AWS Copilot CLI with automated deployments via GitHub Actions.
 
 ## Prerequisites
 
 - AWS account with ECS permissions
-- AWS CLI installed and configured (using `us-east-2` region)
-- Docker and Docker Compose installed locally
+- AWS CLI installed and configured (`us-east-2` region)
 - AWS Copilot CLI installed
 - Domain name with DNS management access
 
-**Note:** This setup is configured for the `us-east-2` (Ohio) region. All resources will be created in this region.
+## Deployment
 
-## Quick Start
+Deployments are automated via GitHub Actions. When code is merged to `main`, the workflow automatically:
+- Builds the Docker image
+- Pushes to ECR
+- Deploys to ECS via Copilot
 
-### Step 1: Install Copilot CLI and Configure AWS
+## Upgrading n8n
 
-1. **Install AWS Copilot CLI:**
-   ```bash
-   brew install aws/tap/copilot-cli
+1. **Update the version in `Dockerfile`:**
+   ```dockerfile
+   FROM docker.n8n.io/n8nio/n8n:1.123.6
    ```
 
-2. **Configure AWS credentials (if not already done):**
-   ```bash
-   aws configure
-   ```
-   
-   Provide your AWS Access Key ID, Secret Access Key, region (`us-east-2`), and output format (`json`).
+2. **Create a PR and merge to `main`**
 
-3. **Verify configuration:**
-   ```bash
-   aws sts get-caller-identity
-   ```
-
-### Step 2: Initialize Copilot Application
-
-1. **Initialize the application and service:**
-   ```bash
-   copilot app init n8n-app
-   copilot svc init --name n8n --svc-type "Load Balanced Web Service" --image docker.n8n.io/n8nio/n8n --port 5678
-   ```
-
-### Step 3: Configure Service
-
-1. **Copy and customize the service manifest:**
-   ```bash
-   cp copilot/n8n/manifest.yml.template copilot/n8n/manifest.yml
-   ```
-
-2. **Edit `copilot/n8n/manifest.yml` and replace:**
-   - `n8n.yourdomain.com` with your actual domain
-   - `YOUR_ACCOUNT_ID` and `YOUR_CERT_ID` with your AWS account ID and certificate ID
-
-### Step 4: Deploy Environment and Service
-
-1. **Create and deploy the production environment:**
-   ```bash
-   copilot env init --name production
-   cp copilot/environments/production/manifest.yml.template copilot/environments/production/manifest.yml
-   ```
-
-2. **Edit `copilot/environments/production/manifest.yml` and update the certificate ARN**
-
-3. **Deploy everything:**
-   ```bash
-   copilot env deploy --name production
-   copilot svc deploy --name n8n --env production
-   ```
-
-### Step 5: Configure DNS and SSL
-
-1. **Get your Load Balancer DNS:**
-   ```bash
-   copilot svc show --name n8n --env production
-   ```
-
-2. **Create DNS CNAME record:**
-   Point `n8n.yourdomain.com` to your Load Balancer DNS name
-
-3. **Request SSL certificate in AWS Certificate Manager:**
-   - Go to [AWS Certificate Manager (us-east-2)](https://us-east-2.console.aws.amazon.com/acm/home)
-   - Request a public certificate for `n8n.yourdomain.com`
-   - Use DNS validation and add the CNAME record to your DNS
-   - Copy the certificate ARN once validated
-
-4. **Update manifests with certificate ARN and redeploy:**
-   ```bash
-   # Update both manifest files with your certificate ARN
-   copilot env deploy --name production
-   copilot svc deploy --name n8n --env production
-   ```
-
-## Custom Image Build and Deployment
-
-This setup uses a custom Docker image that extends the official n8n image. To build and deploy custom images:
-
-1. **Build and push custom image:**
-   ```bash
-   # Login to ECR
-   aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin YOUR_ACCOUNT_ID.dkr.ecr.us-east-2.amazonaws.com
-   
-   # Create multiplatform builder (one time setup)
-   docker buildx create --use --name multiplatform-builder
-   
-   # Build and push for linux/amd64 (ECS platform)
-   docker buildx build --platform linux/amd64 -t YOUR_ACCOUNT_ID.dkr.ecr.us-east-2.amazonaws.com/n8n-app/n8n:latest --push .
-   
-   # Deploy updated service
-   copilot svc deploy --name n8n --env production
-   ```
+The GitHub Actions workflow will automatically build and deploy the new version. Your workflows, credentials, and data are preserved on EFS.
 
 ## Local Development
 
-For local development, you can use Docker Compose:
+Run locally with Docker Compose:
 
 1. **Create `.env` file:**
    ```bash
@@ -122,49 +39,28 @@ For local development, you can use Docker Compose:
    SSL_EMAIL=your-email@yourdomain.com
    ```
 
-2. **Run locally:**
+2. **Run:**
    ```bash
    docker-compose up -d
    ```
 
-## Access Your n8n Instance
-
-Once deployed, access n8n at `https://n8n.yourdomain.com` and complete the initial setup to create your admin account.
-
-## Maintenance Commands
+## Useful Commands
 
 ```bash
 # Check service status
-copilot svc show --name n8n --env production
+copilot svc status --name n8n --env production
 
 # View logs
 copilot svc logs --name n8n --env production --follow
 
-# Update n8n (modify manifest and redeploy)
-copilot svc deploy --name n8n --env production
-
 # Execute commands in container
-copilot task run --image docker.n8n.io/n8nio/n8n --command "ls -la /home/node/.n8n"
+copilot svc exec --name n8n --env production --command "ls -la /home/node/.n8n"
 ```
-
-## Cleanup
-
-To remove all resources:
-
-```bash
-copilot svc delete --name n8n --env production
-copilot env delete --name production
-copilot app delete
-```
-
-Don't forget to clean up:
-- SSL certificates from Certificate Manager
-- DNS records from your domain provider
 
 ## Architecture
 
 ```
-Internet -> ALB -> ECS Fargate (Private Subnet) -> EFS (Persistent Storage)
-                    |
-                    -> CloudWatch (Monitoring & Logs)
+GitHub Actions → ECR → ECS Fargate (Private Subnet) → EFS (Persistent Storage)
+                  ↓
+              CloudWatch Logs
 ```

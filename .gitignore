@@ -7,10 +7,6 @@
 .aws/
 aws-credentials.json
 
-# Copilot generated/sensitive files
-copilot/environments/*/manifest.yml
-copilot/*/manifest.yml
-
 # Copilot workspace (contains app name)
 copilot/.workspace
 
