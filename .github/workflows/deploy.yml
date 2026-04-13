@@ -58,5 +58,4 @@ jobs:
 
       - name: Deploy to ECS via Copilot
         run: |
-          copilot app init n8n-app
           copilot svc deploy --name n8n --env production
