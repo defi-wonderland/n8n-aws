@@ -12,6 +12,7 @@ jobs:
   deploy:
     name: Deploy n8n to production
     runs-on: ubuntu-latest
+    environment: Production
     permissions:
       id-token: write
       contents: read
