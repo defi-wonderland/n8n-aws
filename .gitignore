@@ -7,9 +7,6 @@
 .aws/
 aws-credentials.json
 
-# Copilot workspace (contains app name)
-copilot/.workspace
-
 # IDE files
 .vscode/
 .idea/
