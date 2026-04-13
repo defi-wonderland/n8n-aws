@@ -26,8 +26,8 @@ image:
   # location: 'docker.n8n.io/n8nio/n8n:latest'
   port: 5678
 
-cpu: 512       # Number of CPU units for the task.
-memory: 1024   # Amount of memory in MiB used by the task.
+cpu: 2048      # Number of CPU units for the task.
+memory: 4096   # Amount of memory in MiB used by the task.
 exec: true     # Enable running commands in your container.
 
 network:
@@ -64,6 +64,11 @@ environments:
       N8N_FORMDATA_FILE_SIZE_MAX: 500
       # Disable WAL mode for SQLite - EFS doesn't support it properly
       DB_SQLITE_ENABLE_WAL: false
+      DB_SQLITE_VACUUM_ON_STARTUP: true
+      # Prune old execution data to prevent DB from growing unbounded
+      EXECUTIONS_DATA_PRUNE: true
+      EXECUTIONS_DATA_MAX_AGE: 720
+      EXECUTIONS_DATA_PRUNE_MAX_COUNT: 10000
     count:
       range:
         min: 1
