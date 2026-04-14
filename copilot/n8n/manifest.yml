@@ -64,7 +64,6 @@ environments:
       N8N_FORMDATA_FILE_SIZE_MAX: 500
       # Disable WAL mode for SQLite - EFS doesn't support it properly
       DB_SQLITE_ENABLE_WAL: false
-      DB_SQLITE_VACUUM_ON_STARTUP: true
       # Prune old execution data to prevent DB from growing unbounded
       EXECUTIONS_DATA_PRUNE: true
       EXECUTIONS_DATA_MAX_AGE: 720
